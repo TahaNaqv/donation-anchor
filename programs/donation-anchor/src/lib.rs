@@ -59,6 +59,12 @@ pub mod donation_anchor {
         let rent_minimum = Rent::get()?.minimum_balance(jar_info.data_len());
         let available_balance = jar_info.lamports().saturating_sub(rent_minimum);
 
+        let jar = &mut ctx.accounts.jar;
+        jar.total_raised = jar
+            .total_raised
+            .checked_sub(amount)
+            .ok_or(JarError::Overflow)?;
+
         require!(amount <= available_balance, JarError::InvalidAmount);
 
         **jar_info.try_borrow_mut_lamports()? -= amount;
